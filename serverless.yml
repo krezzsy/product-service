@@ -1,0 +1,27 @@
+service: product-service
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  environment:
+    NODE_ENV: dev
+
+plugins:
+  - serverless-plugin-typescript 
+  - serverless-offline
+
+functions:
+  getProductsList:
+    handler: app/handler.getProductsList
+    events:
+      - http:
+          path: products
+          method: get
+          cors: true
+  getProductsById:
+    handler: app/handler.getProductsById
+    events:
+      - http:
+          path: products/{id}
+          method: get
+          cors: true
