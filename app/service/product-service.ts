@@ -1,19 +1,23 @@
-import { Product } from "../model/product";
-import movies from "../data/movies.json";
+import { DbConnector } from '../utils/db-connector';
+import { ProductEntity } from '../model/entities/product.entity';
+import { ProductDto } from '../model/dto/product.dto';
 
 export class ProductService {
+  private dbConnector;
 
-  public async findProducts (): Promise<Product[]> {
-    const query = { offset: 0, limit: 20 };
-    return Promise.resolve(this.paginated(query));
+  constructor(dbConnector: DbConnector) {
+    this.dbConnector = dbConnector;
   }
 
-  public async findProductById (movieId: number): Promise<Product> {
-    return Promise.resolve(movies.find(movie => movie.id === movieId));
+  public async findProducts (): Promise<ProductEntity[]> {
+    const conn = await this.dbConnector.getConnection();
+    return await conn.getRepository(ProductEntity).find();
   }
 
-  private paginated(query: any): Product[] {
-    const { offset, limit } = query;
-    return movies.slice(offset, offset + limit);
+  public async findProductById (movieId: number): Promise<ProductDto> {
+    const conn = await this.dbConnector.getConnection();
+    return await conn.query('SELECT id, title, tagline, price, budget, revenue, description, vote_average, poster_path, genres, runtime, stocks.count FROM products INNER JOIN stocks ON stocks.product_id = products.id WHERE products.id = $1', [
+      movieId,
+    ]);
   }
 }
